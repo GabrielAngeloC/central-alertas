@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "4mJAPon066E=",
+  "success": true,
+  "projectFilePath": "E:\\Projetos\\central-alertas\\backend\\src\\CentralAlertas.Application\\CentralAlertas.Application.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\gabri\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\10.0.9\\microsoft.extensions.dependencyinjection.abstractions.10.0.9.nupkg.sha512"
+  ],
+  "logs": []
+}

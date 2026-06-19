@@ -1,0 +1,101 @@
+using CentralAlertas.Application.Alerts;
+using CentralAlertas.Domain.Entities;
+using CentralAlertas.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
+
+namespace CentralAlertas.Infrastructure.Repositories;
+
+public class AlertRepository : IAlertRepository
+{
+    private readonly CentralAlertasDbContext _dbContext;
+
+    public AlertRepository(CentralAlertasDbContext dbContext)
+    {
+        _dbContext = dbContext;
+    }
+
+    public Task<Alert?> GetBySourceAndDedupKeyAsync(
+        string source,
+        string dedupKey,
+        CancellationToken cancellationToken)
+    {
+        return _dbContext.Alerts
+            .FirstOrDefaultAsync(
+                x => x.Source == source && x.DedupKey == dedupKey,
+                cancellationToken);
+    }
+
+    public Task<Alert?> GetByIdAsync(
+        Guid id,
+        CancellationToken cancellationToken)
+    {
+        return _dbContext.Alerts
+            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+    }
+
+    public Task<List<Alert>> GetActiveAsync(
+        string? severity,
+        string? category,
+        string? source,
+        CancellationToken cancellationToken)
+    {
+        var query = _dbContext.Alerts
+            .AsNoTracking()
+            .Where(x => x.IsActive)
+            .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(severity))
+        {
+            var normalizedSeverity = severity.Trim().ToLower();
+            query = query.Where(x => x.Severity == normalizedSeverity);
+        }
+
+        if (!string.IsNullOrWhiteSpace(category))
+        {
+            var normalizedCategory = category.Trim();
+            query = query.Where(x => x.Category == normalizedCategory);
+        }
+
+        if (!string.IsNullOrWhiteSpace(source))
+        {
+            var normalizedSource = source.Trim();
+            query = query.Where(x => x.Source == normalizedSource);
+        }
+
+        return query
+            .OrderByDescending(x => x.Severity == "critical")
+            .ThenByDescending(x => x.Severity == "warning")
+            .ThenByDescending(x => x.LastSeenAt)
+            .ToListAsync(cancellationToken);
+    }
+
+    public Task<List<AlertOccurrence>> GetOccurrencesAsync(
+        Guid alertId,
+        CancellationToken cancellationToken)
+    {
+        return _dbContext.AlertOccurrences
+            .AsNoTracking()
+            .Where(x => x.AlertId == alertId)
+            .OrderByDescending(x => x.ReceivedAt)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task AddAsync(
+        Alert alert,
+        CancellationToken cancellationToken)
+    {
+        await _dbContext.Alerts.AddAsync(alert, cancellationToken);
+    }
+
+    public async Task AddOccurrenceAsync(
+        AlertOccurrence occurrence,
+        CancellationToken cancellationToken)
+    {
+        await _dbContext.AlertOccurrences.AddAsync(occurrence, cancellationToken);
+    }
+
+    public Task SaveChangesAsync(CancellationToken cancellationToken)
+    {
+        return _dbContext.SaveChangesAsync(cancellationToken);
+    }
+}

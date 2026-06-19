@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: central_alertas_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: central_alertas
+      POSTGRES_USER: central_alertas_user
+      POSTGRES_PASSWORD: central_alertas_pass
+    ports:
+      - "5435:5432"
+    volumes:
+      - central_alertas_pgdata:/var/lib/postgresql/data
+
+volumes:
+  central_alertas_pgdata:

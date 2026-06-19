@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/CentralAlertas.Api/CentralAlertas.Api.csproj" />
+    <Project Path="src/CentralAlertas.Application/CentralAlertas.Application.csproj" />
+    <Project Path="src/CentralAlertas.Domain/CentralAlertas.Domain.csproj" />
+    <Project Path="src/CentralAlertas.Infrastructure/CentralAlertas.Infrastructure.csproj" />
+  </Folder>
+</Solution>
