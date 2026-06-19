@@ -12,5 +12,22 @@ services:
     volumes:
       - central_alertas_pgdata:/var/lib/postgresql/data
 
+  api:
+    build:
+      context: ./backend
+      dockerfile: src/CentralAlertas.Api/Dockerfile
+    container_name: central_alertas_api
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=central_alertas;Username=central_alertas_user;Password=central_alertas_pass
+      ApiKey__Value: dev-api-key-123
+      Jwt__Secret: dev-secret-key-change-this-in-production
+    ports:
+      - "8080:8080"
+
 volumes:
   central_alertas_pgdata:

@@ -1,5 +1,7 @@
 using CentralAlertas.Application;
 using CentralAlertas.Infrastructure;
+using CentralAlertas.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,5 +31,12 @@ app.MapGet("/health", () => Results.Ok(new
     service = "central-alertas-api",
     timestamp = DateTime.UtcNow
 }));
+
+using var scope = app.Services.CreateScope();
+
+var dbContext = scope.ServiceProvider
+    .GetRequiredService<CentralAlertasDbContext>();
+
+dbContext.Database.Migrate();
 
 app.Run();

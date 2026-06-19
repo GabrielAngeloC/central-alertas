@@ -1,0 +1,27 @@
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+
+COPY ["CentralAlertas.sln", "./"]
+
+COPY ["src/CentralAlertas.Api/CentralAlertas.Api.csproj", "src/CentralAlertas.Api/"]
+COPY ["src/CentralAlertas.Application/CentralAlertas.Application.csproj", "src/CentralAlertas.Application/"]
+COPY ["src/CentralAlertas.Domain/CentralAlertas.Domain.csproj", "src/CentralAlertas.Domain/"]
+COPY ["src/CentralAlertas.Infrastructure/CentralAlertas.Infrastructure.csproj", "src/CentralAlertas.Infrastructure/"]
+
+RUN dotnet restore "CentralAlertas.sln"
+
+COPY . .
+
+RUN dotnet publish "src/CentralAlertas.Api/CentralAlertas.Api.csproj" \
+    -c Release \
+    -o /app/publish \
+    --no-restore
+
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
+WORKDIR /app
+
+COPY --from=build /app/publish .
+
+EXPOSE 8080
+
+ENTRYPOINT ["dotnet", "CentralAlertas.Api.dll"]
