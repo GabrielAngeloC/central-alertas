@@ -9,6 +9,21 @@ public interface IAlertRepository
         string dedupKey,
         CancellationToken cancellationToken);
 
+    Task<List<Alert>> GetResolvedAsync(
+    string? severity,
+    string? category,
+    string? source,
+    CancellationToken cancellationToken);
+
+    Task<List<Alert>> GetAsync(
+    string status,
+    string? severity,
+    string? category,
+    string? source,
+    DateTime? from,
+    DateTime? to,
+    CancellationToken cancellationToken);
+
     Task<Alert?> GetByIdAsync(
         Guid id,
         CancellationToken cancellationToken);

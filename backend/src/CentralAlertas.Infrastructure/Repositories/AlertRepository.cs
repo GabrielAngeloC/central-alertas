@@ -86,6 +86,40 @@ public class AlertRepository : IAlertRepository
     {
         await _dbContext.Alerts.AddAsync(alert, cancellationToken);
     }
+    public Task<List<Alert>> GetResolvedAsync(
+    string? severity,
+    string? category,
+    string? source,
+    CancellationToken cancellationToken)
+    {
+        var query = _dbContext.Alerts
+            .AsNoTracking()
+            .Where(x => !x.IsActive)
+            .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(severity))
+        {
+            var normalizedSeverity = severity.Trim().ToLower();
+            query = query.Where(x => x.Severity == normalizedSeverity);
+        }
+
+        if (!string.IsNullOrWhiteSpace(category))
+        {
+            var normalizedCategory = category.Trim();
+            query = query.Where(x => x.Category == normalizedCategory);
+        }
+
+        if (!string.IsNullOrWhiteSpace(source))
+        {
+            var normalizedSource = source.Trim();
+            query = query.Where(x => x.Source == normalizedSource);
+        }
+
+        return query
+            .OrderByDescending(x => x.ResolvedAt)
+            .ThenByDescending(x => x.LastSeenAt)
+            .ToListAsync(cancellationToken);
+    }
 
     public async Task AddOccurrenceAsync(
         AlertOccurrence occurrence,
@@ -97,5 +131,61 @@ public class AlertRepository : IAlertRepository
     public Task SaveChangesAsync(CancellationToken cancellationToken)
     {
         return _dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    public Task<List<Alert>> GetAsync(
+    string status,
+    string? severity,
+    string? category,
+    string? source,
+    DateTime? from,
+    DateTime? to,
+    CancellationToken cancellationToken)
+    {
+        var query = _dbContext.Alerts
+            .AsNoTracking()
+            .AsQueryable();
+
+        if (status == "active")
+        {
+            query = query.Where(x => x.IsActive);
+        }
+        else if (status == "resolved")
+        {
+            query = query.Where(x => !x.IsActive);
+        }
+
+        if (!string.IsNullOrWhiteSpace(severity))
+        {
+            var normalizedSeverity = severity.Trim().ToLower();
+            query = query.Where(x => x.Severity == normalizedSeverity);
+        }
+
+        if (!string.IsNullOrWhiteSpace(category))
+        {
+            var normalizedCategory = category.Trim();
+            query = query.Where(x => x.Category == normalizedCategory);
+        }
+
+        if (!string.IsNullOrWhiteSpace(source))
+        {
+            var normalizedSource = source.Trim();
+            query = query.Where(x => x.Source == normalizedSource);
+        }
+
+        if (from is not null)
+        {
+            query = query.Where(x => x.LastSeenAt >= from.Value);
+        }
+
+        if (to is not null)
+        {
+            query = query.Where(x => x.LastSeenAt <= to.Value);
+        }
+
+        return query
+            .OrderByDescending(x => x.IsActive)
+            .ThenByDescending(x => x.LastSeenAt)
+            .ToListAsync(cancellationToken);
     }
 }

@@ -14,13 +14,13 @@ public class Source
 
     public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
 
+    public DateTime? UpdatedAt { get; private set; }
+
     private Source()
     {
     }
 
-    public Source(
-        string name,
-        int expectedIntervalMinutes)
+    public Source(string name, int expectedIntervalMinutes)
     {
         Name = name;
         ExpectedIntervalMinutes = expectedIntervalMinutes;
@@ -29,13 +29,25 @@ public class Source
     public void RegisterReception(DateTime receivedAt)
     {
         LastReceivedAt = receivedAt;
+        UpdatedAt = DateTime.UtcNow;
     }
 
-    public void Update(
-        int expectedIntervalMinutes,
-        bool isActive)
+    public void Update(string name, int expectedIntervalMinutes)
     {
+        Name = name;
         ExpectedIntervalMinutes = expectedIntervalMinutes;
-        IsActive = isActive;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void Activate()
+    {
+        IsActive = true;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void Deactivate()
+    {
+        IsActive = false;
+        UpdatedAt = DateTime.UtcNow;
     }
 }

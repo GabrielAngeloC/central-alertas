@@ -23,6 +23,10 @@ public class AlertSummaryResponse
     public DateTime FirstSeenAt { get; set; }
     public DateTime LastSeenAt { get; set; }
 
+    public DateTime? ResolvedAt { get; set; }
+
+    public string? ResolutionReason { get; set; }
+
     public bool IsActive { get; set; }
     public bool IsEscalating { get; set; }
 }

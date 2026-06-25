@@ -20,6 +20,7 @@ public class AlertDetailResponse
     public string? MetricUnit { get; set; }
     public decimal? MetricThreshold { get; set; }
 
+
     public JsonElement? Items { get; set; }
     public JsonElement? Payload { get; set; }
 
@@ -29,6 +30,9 @@ public class AlertDetailResponse
     public DateTime LastSeenAt { get; set; }
     public DateTime? LastNotifiedAt { get; set; }
 
+    public DateTime? ResolvedAt { get; set; }
+    public string? ResolutionReason { get; set; }
+    
     public bool IsActive { get; set; }
     public bool IsEscalating { get; set; }
 }

@@ -78,6 +78,13 @@ namespace CentralAlertas.Infrastructure.Persistence.Migrations
                     b.Property<string>("PayloadJson")
                         .HasColumnType("jsonb");
 
+                    b.Property<string>("ResolutionReason")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<DateTime?>("ResolvedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("Severity")
                         .IsRequired()
                         .HasMaxLength(30)
@@ -104,6 +111,8 @@ namespace CentralAlertas.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("LastSeenAt");
 
+                    b.HasIndex("ResolvedAt");
+
                     b.HasIndex("Severity");
 
                     b.HasIndex("Type");
@@ -112,6 +121,58 @@ namespace CentralAlertas.Infrastructure.Persistence.Migrations
                         .IsUnique();
 
                     b.ToTable("alerts", (string)null);
+                });
+
+            modelBuilder.Entity("CentralAlertas.Domain.Entities.AlertDelivery", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AlertId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("AttemptedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Channel")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<Guid?>("NotificationDestinationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("RoutingRuleId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("SentAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AlertId");
+
+                    b.HasIndex("AttemptedAt");
+
+                    b.HasIndex("Channel");
+
+                    b.HasIndex("NotificationDestinationId");
+
+                    b.HasIndex("RoutingRuleId");
+
+                    b.HasIndex("Status");
+
+                    b.ToTable("alert_deliveries", (string)null);
                 });
 
             modelBuilder.Entity("CentralAlertas.Domain.Entities.AlertOccurrence", b =>
@@ -153,6 +214,176 @@ namespace CentralAlertas.Infrastructure.Persistence.Migrations
                     b.ToTable("alert_occurrences", (string)null);
                 });
 
+            modelBuilder.Entity("CentralAlertas.Domain.Entities.AppUser", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Email")
+                        .IsUnique();
+
+                    b.HasIndex("IsActive");
+
+                    b.ToTable("app_users", (string)null);
+                });
+
+            modelBuilder.Entity("CentralAlertas.Domain.Entities.NotificationDestination", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ConfigurationJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IsActive");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.HasIndex("Type");
+
+                    b.ToTable("notification_destinations", (string)null);
+                });
+
+            modelBuilder.Entity("CentralAlertas.Domain.Entities.RoutingRule", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Category")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DeliveryMode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("integer")
+                        .HasColumnName("rule_order");
+
+                    b.Property<string>("Severity")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<string>("Source")
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
+                    b.Property<int?>("ThrottleMinutes")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Type")
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Category");
+
+                    b.HasIndex("IsActive");
+
+                    b.HasIndex("Order");
+
+                    b.HasIndex("Severity");
+
+                    b.HasIndex("Source");
+
+                    b.HasIndex("Type");
+
+                    b.ToTable("routing_rules", (string)null);
+                });
+
+            modelBuilder.Entity("CentralAlertas.Domain.Entities.RoutingRuleDestination", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("NotificationDestinationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("RoutingRuleId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NotificationDestinationId");
+
+                    b.HasIndex("RoutingRuleId");
+
+                    b.HasIndex("RoutingRuleId", "NotificationDestinationId")
+                        .IsUnique();
+
+                    b.ToTable("routing_rule_destinations", (string)null);
+                });
+
             modelBuilder.Entity("CentralAlertas.Domain.Entities.Source", b =>
                 {
                     b.Property<Guid>("Id")
@@ -176,6 +407,9 @@ namespace CentralAlertas.Infrastructure.Persistence.Migrations
                         .HasMaxLength(150)
                         .HasColumnType("character varying(150)");
 
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.HasKey("Id");
 
                     b.HasIndex("IsActive");
@@ -186,6 +420,31 @@ namespace CentralAlertas.Infrastructure.Persistence.Migrations
                         .IsUnique();
 
                     b.ToTable("sources", (string)null);
+                });
+
+            modelBuilder.Entity("CentralAlertas.Domain.Entities.AlertDelivery", b =>
+                {
+                    b.HasOne("CentralAlertas.Domain.Entities.Alert", "Alert")
+                        .WithMany()
+                        .HasForeignKey("AlertId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("CentralAlertas.Domain.Entities.NotificationDestination", "NotificationDestination")
+                        .WithMany()
+                        .HasForeignKey("NotificationDestinationId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("CentralAlertas.Domain.Entities.RoutingRule", "RoutingRule")
+                        .WithMany()
+                        .HasForeignKey("RoutingRuleId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Alert");
+
+                    b.Navigation("NotificationDestination");
+
+                    b.Navigation("RoutingRule");
                 });
 
             modelBuilder.Entity("CentralAlertas.Domain.Entities.AlertOccurrence", b =>
@@ -199,9 +458,33 @@ namespace CentralAlertas.Infrastructure.Persistence.Migrations
                     b.Navigation("Alert");
                 });
 
+            modelBuilder.Entity("CentralAlertas.Domain.Entities.RoutingRuleDestination", b =>
+                {
+                    b.HasOne("CentralAlertas.Domain.Entities.NotificationDestination", "NotificationDestination")
+                        .WithMany()
+                        .HasForeignKey("NotificationDestinationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("CentralAlertas.Domain.Entities.RoutingRule", "RoutingRule")
+                        .WithMany("Destinations")
+                        .HasForeignKey("RoutingRuleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("NotificationDestination");
+
+                    b.Navigation("RoutingRule");
+                });
+
             modelBuilder.Entity("CentralAlertas.Domain.Entities.Alert", b =>
                 {
                     b.Navigation("Occurrences");
+                });
+
+            modelBuilder.Entity("CentralAlertas.Domain.Entities.RoutingRule", b =>
+                {
+                    b.Navigation("Destinations");
                 });
 #pragma warning restore 612, 618
         }

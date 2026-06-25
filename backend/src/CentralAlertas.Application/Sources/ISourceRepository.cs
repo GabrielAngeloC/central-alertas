@@ -4,11 +4,14 @@ namespace CentralAlertas.Application.Sources;
 
 public interface ISourceRepository
 {
-    Task<Source?> GetByNameAsync(
-        string name,
+    Task<List<Source>> GetAllAsync(CancellationToken cancellationToken);
+
+    Task<Source?> GetByIdAsync(
+        Guid id,
         CancellationToken cancellationToken);
 
-    Task<List<Source>> GetAllAsync(
+    Task<Source?> GetByNameAsync(
+        string name,
         CancellationToken cancellationToken);
 
     Task AddAsync(

@@ -8,6 +8,7 @@ E:\Projetos\central-alertas\backend\src\CentralAlertas.Application\obj\Debug\net
 E:\Projetos\central-alertas\backend\src\CentralAlertas.Application\obj\Debug\net10.0\CentralAlertas.Application.AssemblyInfoInputs.cache
 E:\Projetos\central-alertas\backend\src\CentralAlertas.Application\obj\Debug\net10.0\CentralAlertas.Application.AssemblyInfo.cs
 E:\Projetos\central-alertas\backend\src\CentralAlertas.Application\obj\Debug\net10.0\CentralAlertas.Application.csproj.CoreCompileInputs.cache
+E:\Projetos\central-alertas\backend\src\CentralAlertas.Application\obj\Debug\net10.0\CentralAlertas.Application.sourcelink.json
 E:\Projetos\central-alertas\backend\src\CentralAlertas.Application\obj\Debug\net10.0\CentralA.08BAD2AA.Up2Date
 E:\Projetos\central-alertas\backend\src\CentralAlertas.Application\obj\Debug\net10.0\CentralAlertas.Application.dll
 E:\Projetos\central-alertas\backend\src\CentralAlertas.Application\obj\Debug\net10.0\refint\CentralAlertas.Application.dll

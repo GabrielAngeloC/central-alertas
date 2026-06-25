@@ -30,6 +30,10 @@ public class Alert
     public DateTime LastSeenAt { get; private set; } = DateTime.UtcNow;
     public DateTime? LastNotifiedAt { get; private set; }
 
+    public DateTime? ResolvedAt { get; private set; }
+
+    public string? ResolutionReason { get; private set; }
+
     public IReadOnlyCollection<AlertOccurrence> Occurrences => _occurrences.AsReadOnly();
 
     public bool IsActive { get; private set; } = true;
@@ -38,6 +42,14 @@ public class Alert
     private Alert()
     {
     }
+
+    public void Resolve(string? reason)
+    {
+        IsActive = false;
+        ResolvedAt = DateTime.UtcNow;
+        ResolutionReason = reason;
+    }
+
 
     public Alert(
         string source,
@@ -81,9 +93,11 @@ public class Alert
         Title = title;
         Message = message;
 
+        var previousMetricValue = MetricValue;
+
         IsEscalating = metricValue.HasValue &&
-                       MetricValue.HasValue &&
-                       metricValue.Value > MetricValue.Value;
+                       previousMetricValue.HasValue &&
+                       metricValue.Value > previousMetricValue.Value;
 
         MetricValue = metricValue;
         MetricUnit = metricUnit;
@@ -94,6 +108,8 @@ public class Alert
         OccurrenceCount++;
         LastSeenAt = DateTime.UtcNow;
         IsActive = true;
+        ResolvedAt = null;
+        ResolutionReason = null;
     }
 
     public void MarkAsNotified()

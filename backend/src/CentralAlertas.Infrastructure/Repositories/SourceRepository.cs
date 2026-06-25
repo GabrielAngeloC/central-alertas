@@ -14,20 +14,27 @@ public class SourceRepository : ISourceRepository
         _dbContext = dbContext;
     }
 
+    public Task<List<Source>> GetAllAsync(CancellationToken cancellationToken)
+    {
+        return _dbContext.Sources
+            .OrderBy(x => x.Name)
+            .ToListAsync(cancellationToken);
+    }
+
+    public Task<Source?> GetByIdAsync(
+        Guid id,
+        CancellationToken cancellationToken)
+    {
+        return _dbContext.Sources
+            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+    }
+
     public Task<Source?> GetByNameAsync(
         string name,
         CancellationToken cancellationToken)
     {
         return _dbContext.Sources
             .FirstOrDefaultAsync(x => x.Name == name, cancellationToken);
-    }
-
-    public Task<List<Source>> GetAllAsync(CancellationToken cancellationToken)
-    {
-        return _dbContext.Sources
-            .AsNoTracking()
-            .OrderBy(x => x.Name)
-            .ToListAsync(cancellationToken);
     }
 
     public async Task AddAsync(
