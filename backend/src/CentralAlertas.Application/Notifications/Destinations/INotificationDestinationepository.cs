@@ -23,5 +23,12 @@ public interface INotificationDestinationRepository
         NotificationDestination destination,
         CancellationToken cancellationToken);
 
+    void Remove(NotificationDestination destination);
+
+    // Indica se o destino está vinculado a alguma regra de roteamento.
+    Task<bool> IsUsedByRoutingRuleAsync(
+        Guid id,
+        CancellationToken cancellationToken);
+
     Task SaveChangesAsync(CancellationToken cancellationToken);
 }

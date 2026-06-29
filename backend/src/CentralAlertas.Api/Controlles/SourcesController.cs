@@ -17,6 +17,7 @@ public class SourcesController : ControllerBase
     private readonly ChangeSourceStatusHandler _changeSourceStatusHandler;
     private readonly GetSourcesHealthHandler _getSourcesHealthHandler;
     private readonly CheckSilentSourcesHandler _checkSilentSourcesHandler;
+    private readonly DeleteSourceHandler _deleteSourceHandler;
 
     public SourcesController(
         GetSourcesHandler getSourcesHandler,
@@ -25,7 +26,8 @@ public class SourcesController : ControllerBase
         UpdateSourceHandler updateSourceHandler,
         ChangeSourceStatusHandler changeSourceStatusHandler,
         GetSourcesHealthHandler getSourcesHealthHandler,
-        CheckSilentSourcesHandler checkSilentSourcesHandler)
+        CheckSilentSourcesHandler checkSilentSourcesHandler,
+        DeleteSourceHandler deleteSourceHandler)
     {
         _getSourcesHandler = getSourcesHandler;
         _getSourceByIdHandler = getSourceByIdHandler;
@@ -34,6 +36,20 @@ public class SourcesController : ControllerBase
         _changeSourceStatusHandler = changeSourceStatusHandler;
         _getSourcesHealthHandler = getSourcesHealthHandler;
         _checkSilentSourcesHandler = checkSilentSourcesHandler;
+        _deleteSourceHandler = deleteSourceHandler;
+    }
+
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> Delete(
+        Guid id,
+        CancellationToken cancellationToken)
+    {
+        var deleted = await _deleteSourceHandler.HandleAsync(id, cancellationToken);
+
+        if (!deleted)
+            return NotFound(new { message = "Source não encontrada." });
+
+        return NoContent();
     }
 
     [HttpGet]

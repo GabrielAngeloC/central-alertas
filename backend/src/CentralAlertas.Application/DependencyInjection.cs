@@ -9,6 +9,7 @@ using CentralAlertas.Application.Notifications.Dispatching;
 using CentralAlertas.Application.Notifications.Deliveries;
 using CentralAlertas.Application.Notifications.Destinations;
 using CentralAlertas.Application.Authentication;
+using CentralAlertas.Application.Cors;
 
 
 
@@ -25,19 +26,31 @@ public static class DependencyInjection
         services.AddScoped<GetResolvedAlertsHandler>();
         services.AddScoped<GetAlertByIdHandler>();
         services.AddScoped<GetAlertOccurrencesHandler>();
+        services.AddScoped<SearchAlertsHandler>();
         
         services.AddScoped<ResolveAlertHandler>();
 
         services.AddScoped<GetDashboardSummaryHandler>();
         services.AddScoped<GetDashboardViewsHandler>();
+        services.AddScoped<GetDashboardStatisticsHandler>();
+        services.AddScoped<GetHubHealthHandler>();
+
+        services.AddScoped<GetDashboardViewConfigsHandler>();
+        services.AddScoped<CreateDashboardViewHandler>();
+        services.AddScoped<UpdateDashboardViewHandler>();
+        services.AddScoped<ChangeDashboardViewStatusHandler>();
+        services.AddScoped<DeleteDashboardViewHandler>();
 
         services.AddScoped<GetSourcesHandler>();
         services.AddScoped<GetSourcesHealthHandler>();
         services.AddScoped<CheckSilentSourcesHandler>();
 
         services.AddScoped<GetRoutingRulesHandler>();
+        services.AddScoped<GetRoutingRuleByIdHandler>();
         services.AddScoped<CreateRoutingRuleHandler>();
         services.AddScoped<UpdateRoutingRuleHandler>();
+        services.AddScoped<ChangeRoutingRuleStatusHandler>();
+        services.AddScoped<DeleteRoutingRuleHandler>();
         services.AddScoped<RoutingEngine>();
 
         services.AddScoped<NotificationDispatcher>();
@@ -60,6 +73,7 @@ public static class DependencyInjection
         services.AddScoped<CreateSourceHandler>();
         services.AddScoped<UpdateSourceHandler>();
         services.AddScoped<ChangeSourceStatusHandler>();
+        services.AddScoped<DeleteSourceHandler>();
 
         services.AddScoped<GetSourcesHandler>();
         services.AddScoped<GetSourcesHealthHandler>();
@@ -67,6 +81,14 @@ public static class DependencyInjection
 
         services.AddScoped<GetNotificationDestinationByIdHandler>();
         services.AddScoped<ChangeNotificationDestinationStatusHandler>();
+        services.AddScoped<DeleteNotificationDestinationHandler>();
+
+        services.AddScoped<GetAllowedOriginsHandler>();
+        services.AddScoped<GetAllowedOriginByIdHandler>();
+        services.AddScoped<CreateAllowedOriginHandler>();
+        services.AddScoped<UpdateAllowedOriginHandler>();
+        services.AddScoped<DeleteAllowedOriginHandler>();
+        services.AddScoped<ChangeAllowedOriginStatusHandler>();
 
         return services;
     }

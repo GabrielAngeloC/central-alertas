@@ -38,6 +38,11 @@ public interface IAlertRepository
         Guid alertId,
         CancellationToken cancellationToken);
 
+    // Busca por item: procura o termo em items/payload (jsonb), título e dedup_key.
+    Task<List<Alert>> SearchByItemAsync(
+        string term,
+        CancellationToken cancellationToken);
+
     Task AddAsync(
         Alert alert,
         CancellationToken cancellationToken);

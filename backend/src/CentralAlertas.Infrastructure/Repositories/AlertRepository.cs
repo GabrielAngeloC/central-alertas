@@ -33,6 +33,27 @@ public class AlertRepository : IAlertRepository
             .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
     }
 
+    public Task<List<Alert>> SearchByItemAsync(
+        string term,
+        CancellationToken cancellationToken)
+    {
+        // Procura o termo em items/payload (jsonb convertido para texto),
+        // título e dedup_key. ILIKE = case-insensitive no PostgreSQL.
+        var pattern = $"%{term}%";
+
+        return _dbContext.Alerts
+            .FromSqlInterpolated($@"
+                SELECT * FROM alerts
+                WHERE ""ItemsJson""::text ILIKE {pattern}
+                   OR ""PayloadJson""::text ILIKE {pattern}
+                   OR ""Title"" ILIKE {pattern}
+                   OR ""DedupKey"" ILIKE {pattern}
+                ORDER BY ""LastSeenAt"" DESC
+                LIMIT 200")
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+    }
+
     public Task<List<Alert>> GetActiveAsync(
         string? severity,
         string? category,

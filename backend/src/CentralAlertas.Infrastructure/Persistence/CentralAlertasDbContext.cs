@@ -18,6 +18,8 @@ public class CentralAlertasDbContext : DbContext
     public DbSet<RoutingRuleDestination> RoutingRuleDestinations => Set<RoutingRuleDestination>();
     public DbSet<AlertDelivery> AlertDeliveries => Set<AlertDelivery>();
     public DbSet<AppUser> AppUsers => Set<AppUser>();
+    public DbSet<AllowedOrigin> AllowedOrigins => Set<AllowedOrigin>();
+    public DbSet<DashboardViewConfig> DashboardViews => Set<DashboardViewConfig>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -106,6 +108,8 @@ public class CentralAlertasDbContext : DbContext
             entity.HasIndex(x => x.Category);
             entity.HasIndex(x => x.Type);
             entity.HasIndex(x => x.Source);
+
+            entity.HasQueryFilter(x => !x.IsDeleted);
         });
 
         modelBuilder.Entity<RoutingRuleDestination>(entity =>
@@ -162,6 +166,8 @@ public class CentralAlertasDbContext : DbContext
 
             entity.HasIndex(x => x.Type);
             entity.HasIndex(x => x.IsActive);
+
+            entity.HasQueryFilter(x => !x.IsDeleted);
         });
         modelBuilder.Entity<Alert>(entity =>
         {
@@ -248,6 +254,8 @@ public class CentralAlertasDbContext : DbContext
 
             entity.HasIndex(x => x.IsActive);
             entity.HasIndex(x => x.LastReceivedAt);
+
+            entity.HasQueryFilter(x => !x.IsDeleted);
         });
 
         modelBuilder.Entity<AlertOccurrence>(entity =>
@@ -311,6 +319,65 @@ public class CentralAlertasDbContext : DbContext
                 .IsUnique();
 
             entity.HasIndex(x => x.IsActive);
+        });
+
+        modelBuilder.Entity<AllowedOrigin>(entity =>
+        {
+            entity.ToTable("allowed_origins");
+
+            entity.HasKey(x => x.Id);
+
+            entity.Property(x => x.Origin)
+                .HasMaxLength(300)
+                .IsRequired();
+
+            entity.Property(x => x.Description)
+                .HasMaxLength(300);
+
+            entity.Property(x => x.IsActive)
+                .IsRequired();
+
+            entity.Property(x => x.CreatedAt)
+                .IsRequired();
+
+            entity.HasIndex(x => x.Origin)
+                .IsUnique();
+
+            entity.HasIndex(x => x.IsActive);
+
+            entity.HasQueryFilter(x => !x.IsDeleted);
+        });
+
+        modelBuilder.Entity<DashboardViewConfig>(entity =>
+        {
+            entity.ToTable("dashboard_views");
+
+            entity.HasKey(x => x.Id);
+
+            entity.Property(x => x.Category)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            entity.Property(x => x.Title)
+                .HasMaxLength(150)
+                .IsRequired();
+
+            entity.Property(x => x.Order)
+                .HasColumnName("view_order")
+                .IsRequired();
+
+            entity.Property(x => x.IsActive)
+                .IsRequired();
+
+            entity.Property(x => x.CreatedAt)
+                .IsRequired();
+
+            entity.HasIndex(x => x.Category)
+                .IsUnique();
+
+            entity.HasIndex(x => x.Order);
+
+            entity.HasQueryFilter(x => !x.IsDeleted);
         });
     }
 

@@ -1,11 +1,14 @@
 using System.Text;
+using CentralAlertas.Api.Security;
 using CentralAlertas.Api.Workers.Heartbeat;
 using CentralAlertas.Application;
 using CentralAlertas.Application.Authentication;
+using CentralAlertas.Application.Cors;
 using CentralAlertas.Infrastructure;
 using CentralAlertas.Infrastructure.Authentication;
 using CentralAlertas.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
@@ -48,6 +51,12 @@ builder.Services
 
 builder.Services.AddAuthorization();
 
+// CORS dinâmico: as origens permitidas vêm da configuração (Cors:AllowedOrigins,
+// via env Cors__AllowedOrigins) somadas às origens cadastradas no banco (CRUD).
+// O DynamicCorsPolicyProvider decide por requisição consultando o cache.
+builder.Services.AddCors();
+builder.Services.AddSingleton<ICorsPolicyProvider, DynamicCorsPolicyProvider>();
+
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo
@@ -89,6 +98,8 @@ app.UseSwaggerUI(options =>
 
 app.UseHttpsRedirection();
 
+app.UseCors("spa");
+
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -112,5 +123,16 @@ var adminUserSeeder = scope.ServiceProvider
     .GetRequiredService<AdminUserSeeder>();
 
 await adminUserSeeder.SeedAsync();
+
+var dashboardViewSeeder = scope.ServiceProvider
+    .GetRequiredService<DashboardViewSeeder>();
+
+await dashboardViewSeeder.SeedAsync();
+
+// Carrega as origens de CORS cadastradas no banco para o cache em memória.
+var allowedOriginsCache = scope.ServiceProvider
+    .GetRequiredService<IAllowedOriginsCache>();
+
+await allowedOriginsCache.RefreshAsync();
 
 app.Run();

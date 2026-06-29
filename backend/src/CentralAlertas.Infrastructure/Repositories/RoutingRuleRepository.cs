@@ -56,6 +56,11 @@ public class RoutingRuleRepository : IRoutingRuleRepository
         await _dbContext.RoutingRules.AddAsync(rule, cancellationToken);
     }
 
+    public void Remove(RoutingRule rule)
+    {
+        _dbContext.RoutingRules.Remove(rule);
+    }
+
     public Task SaveChangesAsync(CancellationToken cancellationToken)
     {
         return _dbContext.SaveChangesAsync(cancellationToken);

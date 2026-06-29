@@ -11,18 +11,27 @@ namespace CentralAlertas.Api.Controllers;
 public class RoutingRulesController : ControllerBase
 {
     private readonly GetRoutingRulesHandler _getHandler;
+    private readonly GetRoutingRuleByIdHandler _getByIdHandler;
     private readonly CreateRoutingRuleHandler _createHandler;
     private readonly UpdateRoutingRuleHandler _updateHandler;
+    private readonly ChangeRoutingRuleStatusHandler _changeStatusHandler;
+    private readonly DeleteRoutingRuleHandler _deleteHandler;
     private readonly RoutingEngine _routingEngine;
     public RoutingRulesController(
         GetRoutingRulesHandler getHandler,
+        GetRoutingRuleByIdHandler getByIdHandler,
         CreateRoutingRuleHandler createHandler,
         UpdateRoutingRuleHandler updateHandler,
+        ChangeRoutingRuleStatusHandler changeStatusHandler,
+        DeleteRoutingRuleHandler deleteHandler,
         RoutingEngine routingEngine)
     {
         _getHandler = getHandler;
+        _getByIdHandler = getByIdHandler;
         _createHandler = createHandler;
         _updateHandler = updateHandler;
+        _changeStatusHandler = changeStatusHandler;
+        _deleteHandler = deleteHandler;
         _routingEngine = routingEngine;
     }
 
@@ -37,6 +46,24 @@ public class RoutingRulesController : ControllerBase
             .ToList();
 
         return Ok(response);
+    }
+
+    [HttpGet("{id:guid}")]
+    public async Task<IActionResult> GetById(
+        [FromRoute] Guid id,
+        CancellationToken cancellationToken)
+    {
+        var rule = await _getByIdHandler.HandleAsync(id, cancellationToken);
+
+        if (rule is null)
+        {
+            return NotFound(new
+            {
+                message = "Regra não encontrada."
+            });
+        }
+
+        return Ok(MapToResponse(rule));
     }
 
     [HttpPost]
@@ -147,6 +174,64 @@ public class RoutingRulesController : ControllerBase
                 .ToList()
         };
     }
+    [HttpPost("{id:guid}/activate")]
+    public async Task<IActionResult> Activate(
+        [FromRoute] Guid id,
+        CancellationToken cancellationToken)
+    {
+        var result = await _changeStatusHandler.ActivateAsync(
+            id,
+            cancellationToken);
+
+        if (result.WasNotFound)
+        {
+            return NotFound(new
+            {
+                message = result.ErrorMessage
+            });
+        }
+
+        return Ok(MapToResponse(result.Rule!));
+    }
+
+    [HttpPost("{id:guid}/deactivate")]
+    public async Task<IActionResult> Deactivate(
+        [FromRoute] Guid id,
+        CancellationToken cancellationToken)
+    {
+        var result = await _changeStatusHandler.DeactivateAsync(
+            id,
+            cancellationToken);
+
+        if (result.WasNotFound)
+        {
+            return NotFound(new
+            {
+                message = result.ErrorMessage
+            });
+        }
+
+        return Ok(MapToResponse(result.Rule!));
+    }
+
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> Delete(
+        [FromRoute] Guid id,
+        CancellationToken cancellationToken)
+    {
+        var deleted = await _deleteHandler.HandleAsync(id, cancellationToken);
+
+        if (!deleted)
+        {
+            return NotFound(new
+            {
+                message = "Regra não encontrada."
+            });
+        }
+
+        return NoContent();
+    }
+
     [HttpPost("test")]
     public async Task<IActionResult> TestRouting(
     [FromBody] TestRoutingRuleRequest request,

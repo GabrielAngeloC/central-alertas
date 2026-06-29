@@ -16,6 +16,10 @@ public class NotificationDestination
 
     public DateTime? UpdatedAt { get; private set; }
 
+    public bool IsDeleted { get; private set; }
+
+    public DateTime? DeletedAt { get; private set; }
+
     private NotificationDestination()
     {
     }
@@ -52,6 +56,13 @@ public class NotificationDestination
     public void Deactivate()
     {
         IsActive = false;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void Delete()
+    {
+        IsDeleted = true;
+        DeletedAt = DateTime.UtcNow;
         UpdatedAt = DateTime.UtcNow;
     }
 }

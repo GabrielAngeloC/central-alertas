@@ -8,8 +8,9 @@ using CentralAlertas.Application.Alerts.Commands;
 using Microsoft.AspNetCore.Authorization;
 
 namespace CentralAlertas.Api.Controllers;
-    
-[Authorize]
+
+// Sem [Authorize] na classe: a ingestão (POST) usa X-API-KEY.
+// Os endpoints administrativos (GET/resolve) têm [Authorize] individualmente.
 [ApiController]
 [Route("api/v1/alerts")]
 public class AlertsController : ControllerBase
@@ -21,6 +22,7 @@ public class AlertsController : ControllerBase
     private readonly ResolveAlertHandler _resolveAlertHandler;
     private readonly GetResolvedAlertsHandler _getResolvedAlertsHandler;
     private readonly GetAlertsHandler _getAlertsHandler;
+    private readonly SearchAlertsHandler _searchAlertsHandler;
 
     public AlertsController(
         CreateAlertHandler createAlertHandler,
@@ -29,7 +31,8 @@ public class AlertsController : ControllerBase
         GetResolvedAlertsHandler getResolvedAlertsHandler,
         GetAlertByIdHandler getAlertByIdHandler,
         GetAlertOccurrencesHandler getAlertOccurrencesHandler,
-        ResolveAlertHandler resolveAlertHandler)
+        ResolveAlertHandler resolveAlertHandler,
+        SearchAlertsHandler searchAlertsHandler)
     {
         _createAlertHandler = createAlertHandler;
         _getAlertsHandler = getAlertsHandler;
@@ -38,6 +41,22 @@ public class AlertsController : ControllerBase
         _getAlertByIdHandler = getAlertByIdHandler;
         _getAlertOccurrencesHandler = getAlertOccurrencesHandler;
         _resolveAlertHandler = resolveAlertHandler;
+        _searchAlertsHandler = searchAlertsHandler;
+    }
+
+    [Authorize]
+    [HttpGet("search")]
+    public async Task<IActionResult> Search(
+        [FromQuery] string q,
+        CancellationToken cancellationToken)
+    {
+        var alerts = await _searchAlertsHandler.HandleAsync(q ?? string.Empty, cancellationToken);
+
+        var response = alerts
+            .Select(MapToSummaryResponse)
+            .ToList();
+
+        return Ok(response);
     }
     private static AlertSummaryResponse MapToSummaryResponse(
     Domain.Entities.Alert alert)

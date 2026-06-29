@@ -101,7 +101,13 @@ public class DashboardRepository : IDashboardRepository
     public async Task<List<DashboardView>> GetViewsAsync(
         CancellationToken cancellationToken)
     {
-        var configuredViews = GetInitialConfiguredViews();
+        // Visões configuradas vêm do banco (administráveis pela interface).
+        var configuredViews = await _dbContext.DashboardViews
+            .AsNoTracking()
+            .Where(x => x.IsActive)
+            .OrderBy(x => x.Order)
+            .ThenBy(x => x.Title)
+            .ToListAsync(cancellationToken);
 
         var configuredCategories = configuredViews
             .Select(x => x.Category)
@@ -125,7 +131,6 @@ public class DashboardRepository : IDashboardRepository
                     .Where(alert => alert.Category == view.Category)
                     .ToList()
             })
-            .OrderBy(x => x.Order)
             .ToList();
 
         var unconfiguredAlerts = activeAlerts
@@ -145,47 +150,93 @@ public class DashboardRepository : IDashboardRepository
 
         return views;
     }
-    private static List<DashboardViewConfiguration> GetInitialConfiguredViews()
+
+    public async Task<DashboardStatistics> GetStatisticsAsync(
+        CancellationToken cancellationToken)
     {
-        return
-        [
-            new DashboardViewConfiguration
-            {
-                Category = "pedidos",
-                Title = "Pedidos & Notas",
-                Order = 1
-            },
-            new DashboardViewConfiguration
-            {
-                Category = "faturamento",
-                Title = "Faturamento",
-                Order = 2
-            },
-            new DashboardViewConfiguration
-            {
-                Category = "cotacao",
-                Title = "Cotação de frete",
-                Order = 3
-            },
-            new DashboardViewConfiguration
-            {
-                Category = "infraestrutura",
-                Title = "Internet & Infra",
-                Order = 4
-            },
-            new DashboardViewConfiguration
-            {
-                Category = "estoque",
-                Title = "Estoque",
-                Order = 5
-            }
-        ];
+        var today = DateTime.UtcNow.Date;
+        var cutoff = today.AddDays(-29); // janela de 30 dias (inclusivo)
+
+        var perDayRaw = await _dbContext.Alerts
+            .AsNoTracking()
+            .Where(x => x.FirstSeenAt >= cutoff)
+            .GroupBy(x => x.FirstSeenAt.Date)
+            .Select(g => new { Date = g.Key, Count = g.Count() })
+            .ToListAsync(cancellationToken);
+
+        var byCategory = await _dbContext.Alerts
+            .AsNoTracking()
+            .Where(x => x.LastSeenAt >= cutoff)
+            .GroupBy(x => x.Category)
+            .Select(g => new DashboardLabelCount { Label = g.Key, Count = g.Count() })
+            .OrderByDescending(x => x.Count)
+            .ToListAsync(cancellationToken);
+
+        var byType = await _dbContext.Alerts
+            .AsNoTracking()
+            .Where(x => x.LastSeenAt >= cutoff)
+            .GroupBy(x => x.Type)
+            .Select(g => new DashboardLabelCount { Label = g.Key, Count = g.Count() })
+            .OrderByDescending(x => x.Count)
+            .ToListAsync(cancellationToken);
+
+        // Preenche os dias sem alertas com zero, para a série ficar contínua.
+        var perDay = new List<DashboardDailyCount>();
+        for (var day = cutoff; day <= today; day = day.AddDays(1))
+        {
+            var match = perDayRaw.FirstOrDefault(x => x.Date == day);
+            perDay.Add(new DashboardDailyCount { Date = day, Count = match?.Count ?? 0 });
+        }
+
+        return new DashboardStatistics
+        {
+            AlertsPerDay = perDay,
+            ByCategory = byCategory,
+            ByType = byType
+        };
     }
 
-    private class DashboardViewConfiguration
+    public async Task<DashboardHubHealth> GetHubHealthAsync(
+        CancellationToken cancellationToken)
     {
-        public string Category { get; set; } = string.Empty;
-        public string Title { get; set; } = string.Empty;
-        public int Order { get; set; }
+        const int windowHours = 24;
+        var cutoff = DateTime.UtcNow.AddHours(-windowHours);
+
+        var rows = await _dbContext.AlertDeliveries
+            .AsNoTracking()
+            .Where(x => x.AttemptedAt >= cutoff)
+            .GroupBy(x => new { x.Channel, x.Status })
+            .Select(g => new { g.Key.Channel, g.Key.Status, Count = g.Count() })
+            .ToListAsync(cancellationToken);
+
+        int Count(string? channel, string status) =>
+            rows
+                .Where(r => (channel == null || r.Channel == channel) && r.Status == status)
+                .Sum(r => r.Count);
+
+        var channels = rows
+            .Select(r => r.Channel)
+            .Distinct()
+            .OrderBy(c => c)
+            .ToList();
+
+        return new DashboardHubHealth
+        {
+            WindowHours = windowHours,
+            TotalDeliveries = rows.Sum(r => r.Count),
+            SuccessCount = Count(null, "success"),
+            FailedCount = Count(null, "failed"),
+            SkippedCount = Count(null, "skipped"),
+            ByChannel = channels
+                .Select(c => new DashboardChannelHealth
+                {
+                    Channel = c,
+                    Success = Count(c, "success"),
+                    Failed = Count(c, "failed"),
+                    Skipped = Count(c, "skipped")
+                })
+                .ToList()
+        };
     }
+
 }

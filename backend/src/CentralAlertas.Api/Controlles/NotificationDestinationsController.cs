@@ -16,6 +16,7 @@ public class NotificationDestinationsController : ControllerBase
     private readonly UpdateNotificationDestinationHandler _updateHandler;
     private readonly TestNotificationDestinationHandler _testHandler;
     private readonly ChangeNotificationDestinationStatusHandler _changeStatusHandler;
+    private readonly DeleteNotificationDestinationHandler _deleteHandler;
 
     public NotificationDestinationsController(
         GetNotificationDestinationsHandler getHandler,
@@ -23,7 +24,8 @@ public class NotificationDestinationsController : ControllerBase
         CreateNotificationDestinationHandler createHandler,
         UpdateNotificationDestinationHandler updateHandler,
         TestNotificationDestinationHandler testHandler,
-        ChangeNotificationDestinationStatusHandler changeStatusHandler)
+        ChangeNotificationDestinationStatusHandler changeStatusHandler,
+        DeleteNotificationDestinationHandler deleteHandler)
     {
         _getHandler = getHandler;
         _getByIdHandler = getByIdHandler;
@@ -31,6 +33,23 @@ public class NotificationDestinationsController : ControllerBase
         _updateHandler = updateHandler;
         _testHandler = testHandler;
         _changeStatusHandler = changeStatusHandler;
+        _deleteHandler = deleteHandler;
+    }
+
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> Delete(
+        Guid id,
+        CancellationToken cancellationToken)
+    {
+        var result = await _deleteHandler.HandleAsync(id, cancellationToken);
+
+        if (result.WasNotFound)
+            return NotFound(new { message = result.ErrorMessage });
+
+        if (result.WasInUse)
+            return Conflict(new { message = result.ErrorMessage });
+
+        return NoContent();
     }
 
     [HttpGet]

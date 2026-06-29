@@ -56,6 +56,23 @@ public class NotificationDestinationRepository : INotificationDestinationReposit
             cancellationToken);
     }
 
+    public void Remove(NotificationDestination destination)
+    {
+        _dbContext.NotificationDestinations.Remove(destination);
+    }
+
+    public Task<bool> IsUsedByRoutingRuleAsync(
+        Guid id,
+        CancellationToken cancellationToken)
+    {
+        // Consulta via RoutingRules para que o filtro global (IsDeleted) exclua
+        // regras já excluídas logicamente — só conta regras "vivas".
+        return _dbContext.RoutingRules
+            .AnyAsync(
+                rule => rule.Destinations.Any(d => d.NotificationDestinationId == id),
+                cancellationToken);
+    }
+
     public Task SaveChangesAsync(CancellationToken cancellationToken)
     {
         return _dbContext.SaveChangesAsync(cancellationToken);

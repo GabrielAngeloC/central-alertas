@@ -1,22 +1,77 @@
 using CentralAlertas.Api.Contracts.Dashboard;
 using CentralAlertas.Application.Dashboard;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CentralAlertas.Api.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/v1/dashboard")]
 public class DashboardController : ControllerBase
 {
     private readonly GetDashboardSummaryHandler _getDashboardSummaryHandler;
     private readonly GetDashboardViewsHandler _getDashboardViewsHandler;
+    private readonly GetDashboardStatisticsHandler _getDashboardStatisticsHandler;
+    private readonly GetHubHealthHandler _getHubHealthHandler;
 
     public DashboardController(
         GetDashboardSummaryHandler getDashboardSummaryHandler,
-        GetDashboardViewsHandler getDashboardViewsHandler)
+        GetDashboardViewsHandler getDashboardViewsHandler,
+        GetDashboardStatisticsHandler getDashboardStatisticsHandler,
+        GetHubHealthHandler getHubHealthHandler)
     {
         _getDashboardSummaryHandler = getDashboardSummaryHandler;
         _getDashboardViewsHandler = getDashboardViewsHandler;
+        _getDashboardStatisticsHandler = getDashboardStatisticsHandler;
+        _getHubHealthHandler = getHubHealthHandler;
+    }
+
+    [HttpGet("hub-health")]
+    public async Task<IActionResult> GetHubHealth(CancellationToken cancellationToken)
+    {
+        var health = await _getHubHealthHandler.HandleAsync(cancellationToken);
+
+        var response = new HubHealthResponse
+        {
+            WindowHours = health.WindowHours,
+            TotalDeliveries = health.TotalDeliveries,
+            SuccessCount = health.SuccessCount,
+            FailedCount = health.FailedCount,
+            SkippedCount = health.SkippedCount,
+            ByChannel = health.ByChannel
+                .Select(c => new ChannelHealthResponse
+                {
+                    Channel = c.Channel,
+                    Success = c.Success,
+                    Failed = c.Failed,
+                    Skipped = c.Skipped
+                })
+                .ToList()
+        };
+
+        return Ok(response);
+    }
+
+    [HttpGet("statistics")]
+    public async Task<IActionResult> GetStatistics(CancellationToken cancellationToken)
+    {
+        var stats = await _getDashboardStatisticsHandler.HandleAsync(cancellationToken);
+
+        var response = new DashboardStatisticsResponse
+        {
+            AlertsPerDay = stats.AlertsPerDay
+                .Select(x => new DashboardDailyCountResponse { Date = x.Date, Count = x.Count })
+                .ToList(),
+            ByCategory = stats.ByCategory
+                .Select(x => new DashboardLabelCountResponse { Label = x.Label, Count = x.Count })
+                .ToList(),
+            ByType = stats.ByType
+                .Select(x => new DashboardLabelCountResponse { Label = x.Label, Count = x.Count })
+                .ToList()
+        };
+
+        return Ok(response);
     }
 
     [HttpGet("summary")]

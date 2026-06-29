@@ -28,6 +28,10 @@ public class RoutingRule
 
     public DateTime? UpdatedAt { get; private set; }
 
+    public bool IsDeleted { get; private set; }
+
+    public DateTime? DeletedAt { get; private set; }
+
     public IReadOnlyCollection<RoutingRuleDestination> Destinations =>
         _destinations.AsReadOnly();
 
@@ -87,6 +91,25 @@ public class RoutingRule
             _destinations.Add(new RoutingRuleDestination(Id, destinationId));
         }
 
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void Activate()
+    {
+        IsActive = true;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void Deactivate()
+    {
+        IsActive = false;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void Delete()
+    {
+        IsDeleted = true;
+        DeletedAt = DateTime.UtcNow;
         UpdatedAt = DateTime.UtcNow;
     }
 

@@ -44,6 +44,11 @@ public class SourceRepository : ISourceRepository
         await _dbContext.Sources.AddAsync(source, cancellationToken);
     }
 
+    public void Remove(Source source)
+    {
+        _dbContext.Sources.Remove(source);
+    }
+
     public Task SaveChangesAsync(CancellationToken cancellationToken)
     {
         return _dbContext.SaveChangesAsync(cancellationToken);

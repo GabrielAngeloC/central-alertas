@@ -1,0 +1,16 @@
+# Variáveis de ambiente (segredos locais)
+.env
+!.env.example
+
+# Segredos de desenvolvimento (não versionar)
+**/appsettings.Development.json
+
+Instalacao-e-Execucao.docx
+Documentacao-Central-de-Alertas-v1.2.docx
+
+# Build .NET
+**/bin/
+**/obj/
+**/.vs/
+**/.vscode/
+**/TestResults/

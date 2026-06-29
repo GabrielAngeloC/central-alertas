@@ -16,6 +16,10 @@ public class Source
 
     public DateTime? UpdatedAt { get; private set; }
 
+    public bool IsDeleted { get; private set; }
+
+    public DateTime? DeletedAt { get; private set; }
+
     private Source()
     {
     }
@@ -48,6 +52,13 @@ public class Source
     public void Deactivate()
     {
         IsActive = false;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void Delete()
+    {
+        IsDeleted = true;
+        DeletedAt = DateTime.UtcNow;
         UpdatedAt = DateTime.UtcNow;
     }
 }

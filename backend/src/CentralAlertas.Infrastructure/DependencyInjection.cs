@@ -14,6 +14,8 @@ using CentralAlertas.Infrastructure.Notifications.Telegram;
 using CentralAlertas.Infrastructure.Notifications.Email;
 using CentralAlertas.Application.Authentication;
 using CentralAlertas.Infrastructure.Authentication;
+using CentralAlertas.Application.Cors;
+using CentralAlertas.Infrastructure.Cors;
 
 
 namespace CentralAlertas.Infrastructure;
@@ -46,6 +48,12 @@ public static class DependencyInjection
         services.AddScoped<IAppUserRepository, AppUserRepository>();
 
         services.AddScoped<IAlertDeliveryRepository, AlertDeliveryRepository>();
+
+        services.AddScoped<IAllowedOriginRepository, AllowedOriginRepository>();
+        services.AddSingleton<IAllowedOriginsCache, AllowedOriginsCache>();
+
+        services.AddScoped<IDashboardViewRepository, DashboardViewRepository>();
+        services.AddScoped<DashboardViewSeeder>();
 
         services.AddScoped<AdminUserSeeder>();
 

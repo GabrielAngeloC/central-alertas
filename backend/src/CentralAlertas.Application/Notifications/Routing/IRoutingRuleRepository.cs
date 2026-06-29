@@ -18,5 +18,7 @@ public interface IRoutingRuleRepository
         RoutingRule rule,
         CancellationToken cancellationToken);
 
+    void Remove(RoutingRule rule);
+
     Task SaveChangesAsync(CancellationToken cancellationToken);
 }

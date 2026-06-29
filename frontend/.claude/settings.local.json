@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node \"C:\\\\Users\\\\gabri\\\\AppData\\\\Local\\\\Temp\\\\verify-dashboard.mjs\")",
+      "Bash(node verify-dashboard.mjs)"
+    ]
+  }
+}
