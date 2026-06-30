@@ -14,3 +14,6 @@ Documentacao-Central-de-Alertas-v1.2.docx
 **/.vs/
 **/.vscode/
 **/TestResults/
+
+nginx/dist/*
+!nginx/dist/.gitkeep
