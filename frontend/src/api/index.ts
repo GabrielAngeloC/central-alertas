@@ -26,7 +26,7 @@ import type {
   HubHealthResponse,
 } from './types'
 
-export interface AlertListParams {
+export type AlertListParams = {
   status?: string
   severity?: string
   category?: string

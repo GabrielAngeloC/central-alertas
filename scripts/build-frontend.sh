@@ -36,7 +36,9 @@ fi
 echo "==> Instalando dependencias do frontend"
 cd "${FRONTEND_DIR}"
 if [[ -f package-lock.json ]]; then
-    npm ci
+    # Tenta o install reprodutivel (npm ci); se o lock estiver dessincronizado
+    # com o package.json, cai para npm install em vez de abortar o build.
+    npm ci || npm install
 else
     npm install
 fi
