@@ -14,3 +14,12 @@ Documentacao-Central-de-Alertas-v1.2.docx
 **/.vs/
 **/.vscode/
 **/TestResults/
+
+# Dependências do Node (frontend) — não versionar
+**/node_modules/
+
+# Artefato de build do frontend (gerado pelo Vite)
+frontend/dist/
+
+nginx/dist/*
+!nginx/dist/.gitkeep

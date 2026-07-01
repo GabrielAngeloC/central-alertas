@@ -59,8 +59,26 @@ services:
       Workers__Heartbeat__IntervalSeconds: ${HEARTBEAT_INTERVAL_SECONDS}
 
       Cors__AllowedOrigins: ${CORS_ALLOWED_ORIGINS}
+    # A API nao precisa mais expor a porta para o host: o acesso externo
+    # passa a ser feito pelo Nginx. Mantenha "expose" para a rede interna.
+    # Se ainda quiser acessar a API direto no host, troque por:
+    #   ports:
+    #     - "8080:8080"
+    expose:
+      - "8080"
+    networks:
+      - central_alertas_network
+
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: central_alertas_nginx
+    restart: unless-stopped
+    depends_on:
+      - api
     ports:
-      - "8080:8080"
+      - "80:80"
     networks:
       - central_alertas_network
 

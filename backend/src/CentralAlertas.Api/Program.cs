@@ -96,7 +96,14 @@ app.UseSwaggerUI(options =>
     options.RoutePrefix = "swagger";
 });
 
-app.UseHttpsRedirection();
+// Em Production a API roda atras do Nginx (proxy reverso) falando HTTP na
+// rede interna do Docker. Forcar redirect para HTTPS aqui geraria respostas
+// 307 desnecessarias. O TLS deve ser terminado no proxy/Nginx da borda.
+// Fora de Production (ex.: desenvolvimento local), mantemos o redirect.
+if (!app.Environment.IsProduction())
+{
+    app.UseHttpsRedirection();
+}
 
 app.UseCors("spa");
 
